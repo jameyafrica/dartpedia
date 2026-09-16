@@ -11,8 +11,10 @@ void main(List<String> arguments) {
     printUsage();
   } else if (arguments.first == 'version') {
     print('Dartpedia CLI version $version');
-  } else if (arguments.first == 'search') {
+  } else if (arguments.first == 'wikipedia') {
     
+
+    //pass all args AFTER wikipedia to searchWiki
     // ensures that if no arguments are given are provided after search function, the inputArgs become null  
     final inputArgs = arguments.length >1 ? arguments.sublist(1) : null; // creates a new list containing all the elements
                                                                          // after the first element (search)
@@ -24,16 +26,25 @@ void main(List<String> arguments) {
   }
 }
                       //the argument list itself can be null
-void searchWikipedia(List<String>? arguments) {
+void searchWikipedia(List<String>? arguments) async{
   final String articleTitle;
 
   //if no arguments are passed request a title
   if (arguments == null || arguments.isEmpty) {
     print('Please provide an article title');
 
-    // wait for input and provide a default empty str if the input is null
-    articleTitle = stdin.readLineSync() ?? ''; 
-  } 
+    // wait for input w/o null safety fallback
+    final inputFromStdin = stdin.readLineSync(); 
+    if (inputFromStdin == null || inputFromStdin.isEmpty) {
+      print('No article provided. Exiting');
+    
+    return;  /// exit the function if theres no valid input
+  
+  }
+  articleTitle = inputFromStdin;
+   }
+
+  
 
   else {
     //join args into a str
@@ -41,8 +52,10 @@ void searchWikipedia(List<String>? arguments) {
   } 
   
   print('Looking up articles about "$articleTitle". Please wait.');
-  print('Here ya go!');
-  print('(Pretend this is an article about "$articleTitle")');
+
+//call api and await the result
+  var articleContent = await getWikipediaArticle(articleTitle);
+  print(articleContent); //print full article response 
 }
 
 void printUsage() {
@@ -51,3 +64,17 @@ void printUsage() {
   );
 }
 
+Future<String> getWikipediaArticle(String articleTitle) async {
+  final url = Uri.https(
+    'en.wikipedia.org', // Wikipedia API domain
+    '/api/rest_v1/page/summary/$articleTitle', // API path for article summary
+  );
+                    //await pauses execution of getWikiArticle until get call completes and resturns a response
+  final response = await http.get(url);
+  if (response.statusCode == 200) { //return the body if successful
+    return response.body;
+  } 
+
+  return 'Error: Failed to fetch article " $articleTitle" ${response.statusCode}'; 
+
+}
