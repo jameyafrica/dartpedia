@@ -1,5 +1,8 @@
 // import 'package:cli/cli.dart' as cli;
 import 'dart:io';
+import 'package:http/http.dart' as http; 
+
+
  const version = '0.0.1';
 void main(List<String> arguments) {
  
@@ -20,7 +23,7 @@ void main(List<String> arguments) {
     printUsage();
   }
 }
-
+                      //the argument list itself can be null
 void searchWikipedia(List<String>? arguments) {
   final String articleTitle;
 
@@ -47,3 +50,4 @@ void printUsage() {
     "The following commands are valid: 'help', 'version', 'search <ARTICLE-TITLE>"
   );
 }
+
